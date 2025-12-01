@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thumbnail Preview Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px 0 30px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .upload-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .preview-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .upload-area {
+            border: 3px dashed #bdc3c7;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: #3498db;
+            background-color: #f8fafc;
+        }
+        
+        .upload-area i {
+            font-size: 3rem;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area p {
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        
+        .upload-area span {
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .url-input {
+            margin-bottom: 25px;
+        }
+        
+        .url-input label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .url-input input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .url-input input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .device-selector {
+            margin-bottom: 25px;
+        }
+        
+        .device-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .device-btn {
+            padding: 10px 15px;
+            background-color: #ecf0f1;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2c3e50;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .device-btn:hover {
+            background-color: #d5dbdb;
+        }
+        
+        .device-btn.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .features-checkbox {
+            margin-top: 25px;
+        }
+        
+        .features-checkbox h3 {
+            margin-bottom: 15px;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-item input {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+        }
+        
+        .device-frame {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .device-screen {
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .device-screen img {
+            display: block;
+            width: 100%;
+            height: auto;
+            transition: transform 0.3s;
+        }
+        
+        .no-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        /* Device specific styles */
+        .mobile-frame {
+            width: 320px;
+            padding: 60px 20px;
+            border-radius: 40px;
+        }
+        
+        .mobile-screen {
+            height: 568px;
+            border-radius: 10px;
+        }
+        
+        .tablet-frame {
+            width: 768px;
+            padding: 70px 30px;
+            border-radius: 30px;
+        }
+        
+        .tablet-screen {
+            height: 576px;
+            border-radius: 10px;
+        }
+        
+        .laptop-frame {
+            width: 1024px;
+            padding: 20px 20px 50px;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .laptop-screen {
+            height: 640px;
+            border-radius: 5px;
+        }
+        
+        .laptop-frame::after {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 0 0 5px 5px;
+        }
+        
+        .desktop-frame {
+            width: 1280px;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .desktop-screen {
+            height: 720px;
+            border-radius: 5px;
+        }
+        
+        .tv-frame {
+            width: 1920px;
+            padding: 30px;
+            border-radius: 15px;
+            background-color: #333;
+        }
+        
+        .tv-screen {
+            height: 1080px;
+            border-radius: 5px;
+        }
+        
+        .device-info {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .image-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .image-info h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .image-info p {
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+        
+        .features-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .feature-tag {
+            background-color: #e1f5fe;
+            color: #0277bd;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 1100px) {
+            .device-frame {
+                transform: scale(0.8);
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .device-frame {
+                transform: scale(0.7);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .device-frame {
+                transform: scale(0.6);
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-image"></i> Thumbnail Preview Tool</h1>
+        <p>Upload or enter a URL to preview how your thumbnail will look on different devices and with various features. Perfect for bloggers!</p>
+    </div>
+    
+    <div class="container">
+        <div class="upload-section">
+            <h2 class="section-title">Thumbnail Input</h2>
+            
+            <div class="upload-area" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Drag and drop your thumbnail image here</p>
+                <p>or <span>click to browse</span></p>
+                <p>Supported formats: JPG, PNG, GIF</p>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            </div>
+            
+            <div class="url-input">
+                <label for="imageUrl"><i class="fas fa-link"></i> Or enter image URL:</label>
+                <input type="url" id="imageUrl" placeholder="https://example.com/thumbnail.jpg">
+            </div>
+            
+            <div class="device-selector">
+                <h3><i class="fas fa-laptop"></i> Select Device Preview:</h3>
+                <div class="device-buttons">
+                    <button class="device-btn active" data-device="mobile">
+                        <i class="fas fa-mobile-alt"></i> Mobile
+                    </button>
+                    <button class="device-btn" data-device="tablet">
+                        <i class="fas fa-tablet-alt"></i> Tablet
+                    </button>
+                    <button class="device-btn" data-device="laptop">
+                        <i class="fas fa-laptop"></i> Laptop
+                    </button>
+                    <button class="device-btn" data-device="desktop">
+                        <i class="fas fa-desktop"></i> Desktop
+                    </button>
+                    <button class="device-btn" data-device="tv">
+                        <i class="fas fa-tv"></i> Large TV
+                    </button>
+                </div>
+            </div>
+            
+            <div class="features-checkbox">
+                <h3><i class="fas fa-cogs"></i> Display Features:</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="feature1" checked>
+                        <label for="feature1">Show Title Overlay</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="feature2" checked>
+                        <label for="feature2">Show Borders</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="feature3">
+                        <label for="feature3">Add Watermark</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="feature4" checked>
+                        <label for="feature4">Show Blog Logo</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="feature5">
+                        <label for="feature5">Dark Mode Preview</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="feature6">
+                        <label for="feature6">Add Shadow Effect</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <h2 class="section-title">Thumbnail Preview</h2>
+            
+            <div class="preview-container">
+                <div class="device-frame mobile-frame" id="deviceFrame">
+                    <div class="device-screen mobile-screen" id="deviceScreen">
+                        <div class="no-image" id="noImage">
+                            <div>
+                                <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 15px; color: #bdc3c7;"></i>
+                                <p>Your thumbnail will appear here</p>
+                                <p>Upload an image or enter a URL</p>
+                            </div>
+                        </div>
+                        <img id="previewImage" style="display: none;">
+                    </div>
+                </div>
+                
+                <div class="device-info">
+                    <p id="deviceName">Mobile (320x568)</p>
+                </div>
+                
+                <div class="image-info">
+                    <h3>Thumbnail Information</h3>
+                    <p><strong>Dimensions:</strong> <span id="imgDimensions">--</span></p>
+                    <p><strong>Aspect Ratio:</strong> <span id="imgAspectRatio">--</span></p>
+                    <p><strong>File Size:</strong> <span id="imgSize">--</span></p>
+                    
+                    <div class="features-display" id="featuresDisplay">
+                        <div class="feature-tag">Title Overlay</div>
+                        <div class="feature-tag">Borders</div>
+                        <div class="feature-tag">Blog Logo</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <h3><i class="fas fa-info-circle"></i> How to use this tool on Blogger:</h3>
+        <ul>
+            <li>Upload your thumbnail image or enter the URL of an existing image</li>
+            <li>Select different devices to see how your thumbnail will appear on each</li>
+            <li>Toggle features to see how they affect your thumbnail appearance</li>
+            <li>To add this tool to your Blogger site, simply copy and paste this entire HTML code into an HTML/JavaScript widget</li>
+            <li>Make sure your Blogger template allows custom JavaScript for full functionality</li>
+        </ul>
+    </div>
+
+    <script>
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imageUrl = document.getElementById('imageUrl');
+        const deviceBtns = document.querySelectorAll('.device-btn');
+        const deviceFrame = document.getElementById('deviceFrame');
+        const deviceScreen = document.getElementById('deviceScreen');
+        const previewImage = document.getElementById('previewImage');
+        const noImage = document.getElementById('noImage');
+        const deviceName = document.getElementById('deviceName');
+        const imgDimensions = document.getElementById('imgDimensions');
+        const imgAspectRatio = document.getElementById('imgAspectRatio');
+        const imgSize = document.getElementById('imgSize');
+        const featuresDisplay = document.getElementById('featuresDisplay');
+        const featureCheckboxes = document.querySelectorAll('.features-checkbox input[type="checkbox"]');
+        
+        // Default image for preview (can be replaced with any image URL)
+        const defaultImageUrl = 'https://images.unsplash.com/photo-1593642532744-d377ab507dc8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+        
+        // Device configurations
+        const devices = {
+            mobile: {
+                name: 'Mobile',
+                frameClass: 'mobile-frame',
+                screenClass: 'mobile-screen',
+                dimensions: '320x568',
+                width: 320,
+                height: 568
+            },
+            tablet: {
+                name: 'Tablet',
+                frameClass: 'tablet-frame',
+                screenClass: 'tablet-screen',
+                dimensions: '768x576',
+                width: 768,
+                height: 576
+            },
+            laptop: {
+                name: 'Laptop',
+                frameClass: 'laptop-frame',
+                screenClass: 'laptop-screen',
+                dimensions: '1024x640',
+                width: 1024,
+                height: 640
+            },
+            desktop: {
+                name: 'Desktop',
+                frameClass: 'desktop-frame',
+                screenClass: 'desktop-screen',
+                dimensions: '1280x720',
+                width: 1280,
+                height: 720
+            },
+            tv: {
+                name: 'Large TV',
+                frameClass: 'tv-frame',
+                screenClass: 'tv-screen',
+                dimensions: '1920x1080',
+                width: 1920,
+                height: 1080
+            }
+        };
+        
+        // Current active device
+        let activeDevice = 'mobile';
+        let currentImageUrl = '';
+        
+        // Initialize with a default image
+        window.addEventListener('load', function() {
+            // Use default image for initial preview
+            loadImage(defaultImageUrl);
+            imageUrl.value = defaultImageUrl;
+            updateFeaturesDisplay();
+        });
+        
+        // Upload area click event
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // File input change event
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    loadImage(e.target.result);
+                    imageUrl.value = '';
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // URL input event
+        imageUrl.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                loadImage(this.value);
+                fileInput.value = '';
+            }
+        });
+        
+        // Device button click events
+        deviceBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                deviceBtns.forEach(b => b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Get device type
+                const device = this.getAttribute('data-device');
+                activeDevice = device;
+                
+                // Update device preview
+                updateDevicePreview();
+            });
+        });
+        
+        // Feature checkbox events
+        featureCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateFeaturesDisplay();
+                applyFeaturesToImage();
+            });
+        });
+        
+        // Function to load image
+        function loadImage(url) {
+            currentImageUrl = url;
+            
+            // Show loading state
+            noImage.innerHTML = `
+                <div>
+                    <i class="fas fa-spinner fa-spin" style="font-size: 3rem; margin-bottom: 15px; color: #3498db;"></i>
+                    <p>Loading image...</p>
+                </div>
+            `;
+            noImage.style.display = 'flex';
+            previewImage.style.display = 'none';
+            
+            // Create new image to get dimensions
+            const img = new Image();
+            
+            img.onload = function() {
+                // Show the image
+                previewImage.src = url;
+                previewImage.style.display = 'block';
+                noImage.style.display = 'none';
+                
+                // Update image info
+                updateImageInfo(img);
+                
+                // Apply features to the image
+                applyFeaturesToImage();
+            };
+            
+            img.onerror = function() {
+                noImage.innerHTML = `
+                    <div>
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px; color: #e74c3c;"></i>
+                        <p>Failed to load image</p>
+                        <p>Please check the URL or upload a different image</p>
+                    </div>
+                `;
+                noImage.style.display = 'flex';
+                previewImage.style.display = 'none';
+                
+                // Reset image info
+                imgDimensions.textContent = '--';
+                imgAspectRatio.textContent = '--';
+                imgSize.textContent = '--';
+            };
+            
+            img.src = url;
+        }
+        
+        // Function to update device preview
+        function updateDevicePreview() {
+            const device = devices[activeDevice];
+            
+            // Update device frame classes
+            deviceFrame.className = 'device-frame ' + device.frameClass;
+            deviceScreen.className = 'device-screen ' + device.screenClass;
+            
+            // Update device info
+            deviceName.textContent = `${device.name} (${device.dimensions})`;
+            
+            // Apply features to the image
+            applyFeaturesToImage();
+        }
+        
+        // Function to update image info
+        function updateImageInfo(img) {
+            // Dimensions
+            const width = img.naturalWidth;
+            const height = img.naturalHeight;
+            imgDimensions.textContent = `${width} × ${height} pixels`;
+            
+            // Aspect ratio
+            const ratio = (width / height).toFixed(2);
+            imgAspectRatio.textContent = `${ratio}:1`;
+            
+            // File size (approximate)
+            const sizeInKB = Math.round((img.src.length * 3) / 4000);
+            imgSize.textContent = `${sizeInKB} KB (approx)`;
+        }
+        
+        // Function to update features display
+        function updateFeaturesDisplay() {
+            // Clear current features
+            featuresDisplay.innerHTML = '';
+            
+            // Add active features
+            featureCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    const featureName = checkbox.nextElementSibling.textContent;
+                    const featureTag = document.createElement('div');
+                    featureTag.className = 'feature-tag';
+                    featureTag.textContent = featureName;
+                    featuresDisplay.appendChild(featureTag);
+                }
+            });
+        }
+        
+        // Function to apply features to the image
+        function applyFeaturesToImage() {
+            // Reset any previous styling
+            previewImage.style.filter = '';
+            previewImage.style.border = '';
+            deviceFrame.style.boxShadow = '';
+            deviceScreen.style.backgroundColor = '';
+            
+            // Apply checked features
+            if (document.getElementById('feature2').checked) {
+                previewImage.style.border = '2px solid #3498db';
+            }
+            
+            if (document.getElementById('feature3').checked) {
+                // Add watermark effect
+                deviceScreen.style.backgroundImage = 'linear-gradient(to bottom right, transparent 60%, rgba(52, 152, 219, 0.1) 100%)';
+            }
+            
+            if (document.getElementById('feature5').checked) {
+                // Dark mode
+                deviceScreen.style.backgroundColor = '#2c3e50';
+            }
+            
+            if (document.getElementById('feature6').checked) {
+                // Add shadow effect
+                deviceFrame.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.2)';
+            }
+            
+            // For title overlay and blog logo, we would need to add actual overlays
+            // This is a simplified version for demo purposes
+        }
+        
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#3498db';
+            this.style.backgroundColor = '#f8fafc';
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#bdc3c7';
+            this.style.backgroundColor = '';
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#bdc3c7';
+            this.style.backgroundColor = '';
+            
+            if (e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                
+                // Check if file is an image
+                if (file.type.match('image.*')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        loadImage(e.target.result);
+                        imageUrl.value = '';
+                    };
+                    
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Please drop an image file (JPG, PNG, GIF)');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
